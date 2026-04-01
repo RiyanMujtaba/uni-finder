@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EuroUni Finder — CS for Pakistani Students</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="badge">🎓 2025 / 26 INTAKE</div>
+      <h1>EuroUni <span>Finder</span></h1>
+      <p class="tagline">Best European universities for Pakistani CS students.<br>Duolingo accepted · No SAT · Easy visa process.</p>
+      <div class="profile-card">
+        <div class="profile-label">YOUR PROFILE</div>
+        <div class="profile-grades">
+          <div class="grade"><span class="yr">9th</span><span class="gr g-a">A</span></div>
+          <div class="grade"><span class="yr">10th</span><span class="gr g-a">A</span></div>
+          <div class="grade"><span class="yr">11th</span><span class="gr g-aplus">A+</span></div>
+          <div class="grade"><span class="yr">12th</span><span class="gr g-c">C</span></div>
+          <div class="grade"><span class="yr">Field</span><span class="gr g-field">CS / SE</span></div>
+        </div>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All Countries</button>
+        <button class="filter-btn" data-filter="hungary">🇭🇺 Hungary</button>
+        <button class="filter-btn" data-filter="czech">🇨🇿 Czech Rep.</button>
+        <button class="filter-btn" data-filter="poland">🇵🇱 Poland</button>
+        <button class="filter-btn" data-filter="germany">🇩🇪 Germany</button>
+        <button class="filter-btn" data-filter="latvia">🇱🇻 Latvia</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="grid" id="grid"></main>
+
+  <section class="scholarship-banner">
+    <div class="sb-inner">
+      <div class="sb-icon">💰</div>
+      <div>
+        <div class="sb-title">Stipendium Hungaricum — Fully Funded Scholarship</div>
+        <div class="sb-desc">Pakistani students can apply through HEC Pakistan for full tuition + housing + monthly stipend + health insurance at Hungarian universities. Deadline: <strong>January 15 each year</strong> via HEC portal.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="note-section">
+    <div class="note-inner">
+      <h2>📋 Note on Your 12th Grade C</h2>
+      <p>European universities generally evaluate your <strong>overall FSc aggregate</strong> across both 11th and 12th, not just the final year. Your strong A/A+ in 9th–11th helps. Universities in <strong>Poland and Hungary</strong> are most flexible — some even allow an entrance exam instead of relying on transcripts. Always include a <strong>motivation letter</strong> explaining the grade. Consider a <strong>Foundation Year</strong> at ELTE Budapest as a guaranteed entry pathway.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Data accurate as of 2025/26 intake. Always verify deadlines directly with the university. · Built for Pakistani students applying to European CS programs.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
