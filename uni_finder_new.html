@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UniFinder — Find Your University</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0e12;--card:#14161d;--border:#1e2130;--border2:#2a2d3e;
+  --text:#dbe2ec;--muted:#757f93;--accent:#94a2fb;--accent-dim:rgba(80,74,237,.18);
+  --green:#31cd87;--green-dim:rgba(27,174,110,.12);
+  --yellow:#f9b31d;--yellow-dim:rgba(240,141,14,.12);
+  --red:#f97070;--red-dim:rgba(237,74,74,.12);
+  --purple:#c494fb;--purple-dim:rgba(160,74,237,.12);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+input,select{background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:13px;width:100%;outline:none;font-family:inherit;transition:.15s}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:#1a1d2e}
+button{font-family:inherit;cursor:pointer;border:none;transition:.15s}
+.hidden{display:none!important}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(180deg,rgba(80,74,237,.08) 0%,transparent 100%);border-bottom:1px solid var(--border);padding:40px 20px 32px;text-align:center}
+.badge{display:inline-block;background:var(--accent-dim);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+.header h1{font-size:clamp(28px,5vw,52px);font-weight:800;color:#fff;margin-bottom:8px}
+.header p{color:var(--muted);font-size:15px;line-height:1.6}
+
+/* ── FORM ── */
+.form-wrap{max-width:900px;margin:32px auto;padding:0 20px}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
+.form-title{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:20px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.form-row{display:flex;gap:8px}
+.form-row input,.form-row select{flex:1}
+.eng-score{display:flex;gap:8px;align-items:center}
+.eng-score input{width:100px;flex:none}
+.eng-score span{font-size:12px;color:var(--muted)}
+
+.checkbox-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip-check{position:relative}
+.chip-check input{position:absolute;opacity:0;width:0;height:0}
+.chip-check label{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;transition:.15s;color:var(--muted)}
+.chip-check input:checked+label{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+
+.find-btn{width:100%;margin-top:20px;background:linear-gradient(135deg,#504aed,#7c6ffa);color:#fff;font-size:15px;font-weight:700;padding:14px;border-radius:10px;letter-spacing:.02em}
+.find-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+/* ── RESULTS ── */
+.results-wrap{max-width:900px;margin:0 auto 60px;padding:0 20px}
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.results-count{font-size:14px;color:var(--muted)}
+.results-count strong{color:var(--text)}
+.sort-row{display:flex;gap:8px;align-items:center}
+.sort-row label{font-size:12px;color:var(--muted)}
+.sort-row select{width:auto;font-size:12px;padding:6px 10px}
+
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.filt-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600}
+.filt-btn:hover{border-color:var(--accent);color:var(--accent)}
+.filt-btn.active{background:var(--accent-dim);border-color:var(--accent);color:#fff}
+
+/* ── UNI CARD ── */
+.uni-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:.15s}
+.uni-card:hover{border-color:var(--border2)}
+.card-top{padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.card-left{}
+.uni-flag-name{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.uni-flag{font-size:20px}
+.uni-name{font-size:17px;font-weight:700;color:#fff}
+.uni-name a{color:#fff}
+.uni-name a:hover{color:var(--accent);text-decoration:none}
+.uni-loc{font-size:12px;color:var(--muted);margin-bottom:8px}
+.match-bar{display:flex;align-items:center;gap:8px}
+.match-label{font-size:11px;color:var(--muted)}
+.match-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.match-high{background:var(--green-dim);color:var(--green)}
+.match-mid{background:var(--yellow-dim);color:var(--yellow)}
+.match-low{background:var(--red-dim);color:var(--red)}
+
+.card-right{text-align:right;min-width:120px}
+.tuition-val{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:2px}
+.tuition-note{font-size:11px;color:var(--muted);margin-bottom:6px}
+.acceptance{font-size:12px;color:var(--muted)}
+.acceptance strong{color:var(--text)}
+
+.card-meta{padding:0 20px 14px;display:flex;gap:6px;flex-wrap:wrap}
+.meta-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px}
+.mc-green{background:var(--green-dim);color:var(--green)}
+.mc-yellow{background:var(--yellow-dim);color:var(--yellow)}
+.mc-red{background:var(--red-dim);color:var(--red)}
+.mc-blue{background:var(--accent-dim);color:var(--accent)}
+.mc-gray{background:rgba(117,127,147,.1);color:var(--muted)}
+.mc-purple{background:var(--purple-dim);color:var(--purple)}
+
+.card-reqs{padding:0 20px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.req-row{display:flex;align-items:flex-start;gap:7px;font-size:12px}
+.req-icon{font-size:13px;margin-top:1px;flex-shrink:0}
+.req-content{}
+.req-title{font-weight:700;color:var(--text);margin-bottom:1px}
+.req-val{color:var(--muted);line-height:1.4}
+
+.card-expand-btn{width:100%;background:none;border-top:1px solid var(--border);padding:10px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.card-expand-btn:hover{background:rgba(255,255,255,.02);color:var(--text)}
+
+.card-detail{padding:16px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,.2)}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:14px}
+.detail-item .dl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.detail-item .dv{font-size:13px;color:var(--text);line-height:1.5}
+.detail-note{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;padding:12px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--border)}
+.card-links{display:flex;gap:8px;flex-wrap:wrap}
+.link-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid}
+.link-primary{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.link-primary:hover{background:rgba(80,74,237,.3);text-decoration:none}
+.link-secondary{background:transparent;border-color:var(--border2);color:var(--muted)}
+.link-secondary:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+.no-results{text-align:center;padding:60px 20px;color:var(--muted)}
+.no-results .icon{font-size:48px;margin-bottom:16px}
+.no-results h3{font-size:18px;color:var(--text);margin-bottom:8px}
+
+/* ── MISC ── */
+.section-divider{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;padding:0 2px;display:flex;align-items:center;gap:10px}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">🎓 2025 / 26 INTAKE — BACHELORS</div>
+  <h1>UniFinder</h1>
+  <p>Tell us your profile. We'll find the best universities for you.<br>Bachelors only · Worldwide · International student requirements included</p>
+</div>
+
+<div class="form-wrap">
+  <div class="form-card">
+    <div class="form-title">Your Profile</div>
+    <div class="form-grid">
+
+      <div class="form-group" style="grid-column:span 2">
+        <label>Field of Study</label>
+        <select id="f-field">
+          <option value="cs">Computer Science / Software Engineering</option>
+          <option value="engineering">Engineering (Civil / Electrical / Mechanical)</option>
+          <option value="business">Business / Management / Finance</option>
+          <option value="medicine">Medicine / Pharmacy</option>
+          <option value="architecture">Architecture / Design</option>
+          <option value="law">Law</option>
+          <option value="any">Open to Anything</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>High School Grades</label>
+        <select id="f-grades">
+          <option value="excellent">Excellent (A / A+ / 80%+)</option>
+          <option value="good">Good (B / 65–80%)</option>
+          <option value="average" selected>Average (C / 50–65%)</option>
+          <option value="below">Below Average (&lt;50%)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>SAT</label>
+        <select id="f-sat">
+          <option value="none" selected>Not taken</option>
+          <option value="below1200">Taken — below 1200</option>
+          <option value="1200">Taken — 1200–1400</option>
+          <option value="1400">Taken — 1400+</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>English Proficiency Test</label>
+        <select id="f-eng-type" onchange="updateEngScore()">
+          <option value="none">None / Not taken yet</option>
+          <option value="ielts">IELTS</option>
+          <option value="toefl">TOEFL iBT</option>
+          <option value="duolingo">Duolingo English Test</option>
+          <option value="pte">PTE Academic</option>
+          <option value="native">Native / School in English</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="eng-score-group" style="display:none">
+        <label>Your Score</label>
+        <input type="number" id="f-eng-score" placeholder="e.g. 6.5" step="0.5"/>
+      </div>
+
+      <div class="form-group">
+        <label>Budget (Tuition per year, USD)</label>
+        <select id="f-budget">
+          <option value="999999" selected>Any budget — show all</option>
+          <option value="3000">Under $3,000</option>
+          <option value="8000">$3,000 – $8,000</option>
+          <option value="15000">$8,000 – $15,000</option>
+          <option value="25000">$15,000 – $25,000</option>
+          <option value="35000">$25,000 – $35,000</option>
+          <option value="50000">$35,000+</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Preferred Regions (select all that interest you)</label>
+        <div class="checkbox-group">
+          <div class="chip-check"><input type="checkbox" id="r-europe" value="europe" checked><label for="r-europe">🇪🇺 Europe</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-middleeast" value="middleeast" checked><label for="r-middleeast">🕌 Middle East</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-saudi" value="saudi" checked><label for="r-saudi">🇸🇦 Saudi Arabia</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-aus" value="aus" checked><label for="r-aus">🇦🇺 Australia</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-nz" value="nz" checked><label for="r-nz">🇳🇿 New Zealand</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-canada" value="canada" checked><label for="r-canada">🇨🇦 Canada</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-uk" value="uk" checked><label for="r-uk">🇬🇧 UK</label></div>
+          <div class="chip-check"><input type="checkbox" id="r-malaysia" value="malaysia" checked><label for="r-malaysia">🇲🇾 Malaysia</label></div>
+        </div>
+      </div>
+
+    </div>
+    <button class="find-btn" onclick="findUnis()">🔍 Find My Universities</button>
+  </div>
+</div>
+
+<div class="results-wrap" id="results-section" style="display:none">
+  <div class="results-header">
+    <div class="results-count">Showing <strong id="res-count">0</strong> universities matching your profile</div>
+    <div class="sort-row">
+      <label>Sort by</label>
+      <select id="sort-by" onchange="renderResults()">
+        <option value="match">Best Match</option>
+        <option value="tuition">Lowest Tuition</option>
+        <option value="acceptance">Highest Acceptance</option>
+        <option value="visa">Easiest Visa</option>
+      </select>
+    </div>
+  </div>
+  <div class="filter-bar" id="region-filters"></div>
+  <div id="uni-list"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  UNIVERSITY DATABASE
+// ══════════════════════════════════════════
+const UNIS = [
+
+// ─── EUROPE ───────────────────────────────
+{
+  id:'unideb', name:'University of Debrecen', city:'Debrecen', country:'Hungary', region:'europe', flag:'🇭🇺',
+  programs:['cs','engineering','medicine','business'],
+  tuitionUSD:3800, tuitionLabel:'~€3,500 / yr', tuitionNote:'Varies by program',
+  duration:{cs:4,engineering:4,medicine:6,business:4},
+  acceptance:65, visaDifficulty:'easy',
+  visaNote:'Schengen student visa. Straightforward with offer letter. Stipendium Hungaricum covers visa costs.',
+  termStart:['September','February'],
+  deadlines:'Jul 15 (self-funded) · Jan 15 (Stipendium Hungaricum)',
+  engReq:{ielts:5.5,toefl:72,duolingo:95,pte:50},
+  engNote:'Duolingo 95 accepted. No English test if schooled in English.',
+  satRequired:false,
+  gradesNote:'Overall aggregate evaluated. FSc / Matric accepted.',
+  intlNote:'Large international community. Popular with Pakistani students via Stipendium Hungaricum (fully funded: tuition + housing + stipend).',
+  scholarships:'Stipendium Hungaricum — apply via HEC Pakistan portal by Jan 15',
+  website:'https://www.edu.unideb.hu/en/',
+  applyLink:'https://www.edu.unideb.hu/en/international/undergraduate',
+  highlights:['Stipendium Eligible','Duolingo OK','No SAT','Low cost of living','Medicine available'],
+},
+{
+  id:'bme', name:'Budapest University of Technology (BME)', city:'Budapest', country:'Hungary', region:'europe', flag:'🇭🇺',
+  programs:['cs','engineering'],
+  tuitionUSD:4500, tuitionLabel:'~€4,200 / yr',
+  duration:{cs:4,engineering:4},
+  acceptance:58, visaDifficulty:'easy',
+  visaNote:'Schengen student visa. Budapest is well-connected and safe.',
+  termStart:['September'],
+  deadlines:'Jun 30 (self-funded) · Jan 15 (Stipendium)',
+  engReq:{ielts:5.5,toefl:72,duolingo:95,pte:50},
+  engNote:'Duolingo accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Strong aggregate preferred for engineering.',
+  intlNote:'Top engineering university in Central Europe. Many international students. Stipendium Hungaricum eligible.',
+  scholarships:'Stipendium Hungaricum',
+  website:'https://www.bme.hu/en',
+  applyLink:'https://www.bme.hu/en/international/admission',
+  highlights:['Top Central European Engineering','Stipendium Eligible','Duolingo OK','Budapest — great city'],
+},
+{
+  id:'rtu', name:'Riga Technical University', city:'Riga', country:'Latvia', region:'europe', flag:'🇱🇻',
+  programs:['cs','engineering','business'],
+  tuitionUSD:2200, tuitionLabel:'~€2,000 / yr',
+  duration:{cs:4,engineering:4,business:3},
+  acceptance:70, visaDifficulty:'easy',
+  visaNote:'Latvia has one of the easiest EU student visas for Pakistani applicants. Simple process with offer letter.',
+  termStart:['September','February'],
+  deadlines:'Aug 1 (main intake)',
+  engReq:{ielts:5.5,toefl:67,duolingo:95,pte:48},
+  engNote:'Duolingo 95 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. No strict minimum — holistic review.',
+  intlNote:'EU degree opens doors across Europe. Very low cost of living (~€450/month). English-medium programs.',
+  scholarships:'RTU Excellence Scholarships for top students',
+  website:'https://www.rtu.lv/en/',
+  applyLink:'https://www.rtu.lv/en/studies/prospective-students/how-to-apply',
+  highlights:['Cheapest EU option','Easiest EU visa','Duolingo OK','EU degree','No SAT'],
+},
+{
+  id:'ctu', name:'Czech Technical University (CTU Prague)', city:'Prague', country:'Czech Republic', region:'europe', flag:'🇨🇿',
+  programs:['cs','engineering'],
+  tuitionUSD:1800, tuitionLabel:'Free–€1,500 / yr',
+  duration:{cs:3,engineering:4},
+  acceptance:52, visaDifficulty:'moderate',
+  visaNote:'Czech long-stay student visa. More documentation required. Allow 8–10 weeks processing.',
+  termStart:['October'],
+  deadlines:'Feb 28 (English programs)',
+  engReq:{ielts:6.0,toefl:80,duolingo:null,pte:54},
+  engNote:'IELTS 6.0 or TOEFL 80 required. Duolingo not accepted for English-track.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Entrance exam may be required for some programs.',
+  intlNote:'Free tuition in Czech-language track. English-medium CS programs ~€1,500/yr. Top European tech university.',
+  scholarships:'Czech Government Scholarships via Ministry of Education',
+  website:'https://www.cvut.cz/en',
+  applyLink:'https://www.cvut.cz/en/studies/international-students',
+  highlights:['Effectively free (Czech track)','Top EU tech uni','Prague — affordable city','No SAT'],
+},
+{
+  id:'wut', name:'Warsaw University of Technology', city:'Warsaw', country:'Poland', region:'europe', flag:'🇵🇱',
+  programs:['cs','engineering'],
+  tuitionUSD:2800, tuitionLabel:'~€2,500 / yr',
+  duration:{cs:4,engineering:4},
+  acceptance:52, visaDifficulty:'moderate',
+  visaNote:'Polish national visa (type D). Requires financial proof and accommodation confirmation.',
+  termStart:['October'],
+  deadlines:'Jul 15',
+  engReq:{ielts:6.0,toefl:80,duolingo:null,pte:54},
+  engNote:'IELTS 6.0 or TOEFL required. Duolingo not accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Entrance exam available — good for students with grade issues.',
+  intlNote:'One of Europe\'s best CS and engineering universities. Entrance exam can replace transcripts.',
+  scholarships:'Erasmus+ for exchange. Limited direct scholarships.',
+  website:'https://www.pw.edu.pl/en',
+  applyLink:'https://www.pw.edu.pl/en/admissions',
+  highlights:['Entrance exam option','Top Polish tech','Affordable','No SAT'],
+},
+{
+  id:'iyte', name:'Izmir Institute of Technology', city:'İzmir', country:'Turkey', region:'europe', flag:'🇹🇷',
+  programs:['cs','engineering'],
+  tuitionUSD:1400, tuitionLabel:'~$1,200 / yr',
+  duration:{cs:4,engineering:4},
+  acceptance:55, visaDifficulty:'easy',
+  visaNote:'Turkey e-Visa + student residence permit. Very easy for Pakistanis. University assists.',
+  termStart:['September'],
+  deadlines:'Jun 30 (self-funded) · Feb 10 (Türkiye Burslari scholarship)',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:52},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Holistic review.',
+  intlNote:'Large Pakistani community in Turkey. Türkiye Burslari scholarship covers full tuition + stipend + accommodation.',
+  scholarships:'Türkiye Burslari — fully funded (apply at turkiyeburslari.gov.tr by Feb 10)',
+  website:'https://www.iyte.edu.tr/en/',
+  applyLink:'https://www.iyte.edu.tr/en/prospective-students/international-students/',
+  highlights:['Türkiye Burslari scholarship','Duolingo OK','Very cheap','Easy visa','Pakistani-friendly'],
+},
+{
+  id:'metu', name:'Middle East Technical University (METU)', city:'Ankara', country:'Turkey', region:'europe', flag:'🇹🇷',
+  programs:['cs','engineering'],
+  tuitionUSD:1200, tuitionLabel:'~$1,000 / yr',
+  duration:{cs:4,engineering:4},
+  acceptance:35, visaDifficulty:'easy',
+  visaNote:'Turkey student visa. Easy for Pakistanis.',
+  termStart:['September'],
+  deadlines:'May 31 (self) · Feb 10 (Türkiye Burslari)',
+  engReq:{ielts:6.5,toefl:87,duolingo:110,pte:58},
+  engNote:'Higher English requirement. Duolingo 110.',
+  satRequired:false,
+  gradesNote:'Strong grades preferred. Very competitive.',
+  intlNote:'Fully English-medium top university. Ranked #501-600 QS. Competitive but very cheap.',
+  scholarships:'Türkiye Burslari',
+  website:'https://www.metu.edu.tr/',
+  applyLink:'https://ois.metu.edu.tr/en/international-students',
+  highlights:['Top Turkish university','English medium','Very cheap','Türkiye Burslari'],
+},
+{
+  id:'coventry', name:'Coventry University', city:'Coventry', country:'United Kingdom', region:'uk', flag:'🇬🇧',
+  programs:['cs','engineering','business'],
+  tuitionUSD:16000, tuitionLabel:'~£13,900 / yr',
+  duration:{cs:3,engineering:3,business:3},
+  acceptance:68, visaDifficulty:'moderate',
+  visaNote:'UK Student visa (Tier 4). Requires CAS number from uni + proof of funds (£1,023/month London, £820 outside). Processing 3–5 weeks.',
+  termStart:['September','January'],
+  deadlines:'Aug (Sep intake) · Dec (Jan intake)',
+  engReq:{ielts:6.0,toefl:80,duolingo:110,pte:54},
+  engNote:'Duolingo 110 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/A-levels accepted. Overall performance considered.',
+  intlNote:'Popular UK uni with good international support. 3-year degree (faster than US/Aus). No post-study work visa from Jan 2024 for most programs (check latest rules).',
+  scholarships:'Coventry University International Scholarship — up to £2,000',
+  website:'https://www.coventry.ac.uk',
+  applyLink:'https://www.coventry.ac.uk/study-at-coventry/international-students/how-to-apply/',
+  highlights:['3-year degree','Duolingo OK','Jan + Sep intake','Strong support services'],
+},
+{
+  id:'uclan', name:'University of Central Lancashire (UCLan)', city:'Preston', country:'United Kingdom', region:'uk', flag:'🇬🇧',
+  programs:['cs','engineering','business','medicine'],
+  tuitionUSD:15000, tuitionLabel:'~£13,000 / yr',
+  duration:{cs:3,engineering:3,business:3,medicine:5},
+  acceptance:72, visaDifficulty:'moderate',
+  visaNote:'UK Student Visa. Preston is outside London — lower living costs.',
+  termStart:['September','January'],
+  deadlines:'Aug (Sep) · Dec (Jan)',
+  engReq:{ielts:6.0,toefl:80,duolingo:105,pte:54},
+  engNote:'Duolingo 105 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. Flexible entry.',
+  intlNote:'One of UK\'s most Pakistani-friendly universities. Large South Asian community in Preston.',
+  scholarships:'UCLan Vice-Chancellor Scholarship',
+  website:'https://www.uclan.ac.uk',
+  applyLink:'https://www.uclan.ac.uk/international/how-to-apply',
+  highlights:['Large Pakistani community','Flexible entry','Duolingo OK','Affordable UK city'],
+},
+
+// ─── SAUDI ARABIA ─────────────────────────
+{
+  id:'taibah', name:'Taibah University', city:'Madinah Al-Munawwarah', country:'Saudi Arabia', region:'saudi', flag:'🇸🇦',
+  programs:['cs','engineering','medicine','business'],
+  tuitionUSD:850, tuitionLabel:'~$800 / yr',
+  duration:{cs:4,engineering:4,medicine:6,business:4},
+  acceptance:60, visaDifficulty:'easy',
+  visaNote:'Saudi student visa. Straightforward for Pakistanis with offer letter. University assists with residency permit (Iqama).',
+  termStart:['September'],
+  deadlines:'Jun – Aug',
+  engReq:{ielts:5.0,toefl:61,duolingo:90,pte:45},
+  engNote:'Duolingo 90 accepted. Some programs accept no test if schooled in English.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. No strict minimum for most programs.',
+  intlNote:'Located in Madinah — ideal Islamic environment near Masjid an-Nabawi. Large Pakistani community. English and Arabic medium programs.',
+  scholarships:'Saudi government scholarships occasionally available. Check MOHE Saudi.',
+  website:'https://www.taibahu.edu.sa/en',
+  applyLink:'https://www.taibahu.edu.sa/en/admissions/international',
+  highlights:['Madinah location','Islamic environment','Very affordable','No SAT','Duolingo OK'],
+},
+{
+  id:'kau', name:'King Abdulaziz University (KAU)', city:'Jeddah', country:'Saudi Arabia', region:'saudi', flag:'🇸🇦',
+  programs:['cs','engineering','business','medicine'],
+  tuitionUSD:1300, tuitionLabel:'~$1,200 / yr',
+  duration:{cs:4,engineering:4,medicine:6,business:4},
+  acceptance:50, visaDifficulty:'easy',
+  visaNote:'Saudi student visa. University assists. Jeddah has well-established Pakistani community.',
+  termStart:['September'],
+  deadlines:'Jun – Aug',
+  engReq:{ielts:5.5,toefl:72,duolingo:null,pte:50},
+  engNote:'IELTS or TOEFL preferred. Contact admissions about Duolingo — case by case.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Overall aggregate considered.',
+  intlNote:'QS-ranked. One of Saudi Arabia\'s top universities. Strong CS/IT/AI programs. Large Pakistani expat community in Jeddah makes settling easy.',
+  scholarships:'KAU International Deanship scholarships. Also Saudi MOHE scholarships.',
+  website:'https://www.kau.edu.sa/home-english.aspx',
+  applyLink:'https://www.kau.edu.sa/Content.aspx?Site_ID=0&lng=EN&RootID=12808',
+  highlights:['Top Saudi uni','QS ranked','Jeddah city','Pakistani community','Affordable'],
+},
+{
+  id:'iumadinah', name:'Islamic University of Madinah', city:'Madinah Al-Munawwarah', country:'Saudi Arabia', region:'saudi', flag:'🇸🇦',
+  programs:['cs'],
+  tuitionUSD:0, tuitionLabel:'Fully Funded',
+  duration:{cs:4},
+  acceptance:18, visaDifficulty:'easy',
+  visaNote:'Visa included in scholarship. University handles all paperwork.',
+  termStart:['September'],
+  deadlines:'Check website — varies yearly',
+  engReq:{ielts:null,toefl:null,duolingo:null,pte:null},
+  engNote:'No English test required. Arabic is primary language.',
+  satRequired:false,
+  gradesNote:'Islamic University students are selected via scholarship — Quran recitation and academic record.',
+  intlNote:'Full scholarship: tuition, housing, monthly stipend, flights for international Muslim students. Primarily Islamic studies but CS faculty exists.',
+  scholarships:'Full scholarship — tuition + accommodation + monthly stipend + flights',
+  website:'https://www.iu.edu.sa/en',
+  applyLink:'https://www.iu.edu.sa/en/admission/international-students',
+  highlights:['Fully funded','Madinah','No tuition','Islamic environment','Flights included'],
+},
+{
+  id:'kfupm', name:'King Fahd University of Petroleum & Minerals (KFUPM)', city:'Dhahran', country:'Saudi Arabia', region:'saudi', flag:'🇸🇦',
+  programs:['cs','engineering'],
+  tuitionUSD:0, tuitionLabel:'Free / Scholarship',
+  duration:{cs:4,engineering:4},
+  acceptance:30, visaDifficulty:'easy',
+  visaNote:'Saudi student visa handled by university.',
+  termStart:['September'],
+  deadlines:'Mar – Apr',
+  engReq:{ielts:6.0,toefl:79,duolingo:null,pte:null},
+  engNote:'IELTS 6.0 or TOEFL 79. Fully English medium.',
+  satRequired:false,
+  gradesNote:'Competitive — strong grades preferred. FSc/Matric accepted.',
+  intlNote:'One of the Middle East\'s top engineering and CS universities. Fully English medium. Strong scholarship program.',
+  scholarships:'KFUPM scholarship covers tuition + accommodation + stipend',
+  website:'https://www.kfupm.edu.sa/en/',
+  applyLink:'https://www.kfupm.edu.sa/en/admissions/undergraduate',
+  highlights:['Top Middle East engineering','Scholarship available','English medium','Free/subsidised'],
+},
+
+// ─── MIDDLE EAST ──────────────────────────
+{
+  id:'sharjah', name:'University of Sharjah', city:'Sharjah', country:'UAE', region:'middleeast', flag:'🇦🇪',
+  programs:['cs','engineering','business','medicine','architecture'],
+  tuitionUSD:5300, tuitionLabel:'~$5,000 / yr',
+  duration:{cs:4,engineering:4,business:4,medicine:5,architecture:5},
+  acceptance:65, visaDifficulty:'easy',
+  visaNote:'UAE student visa (residence permit). University handles it entirely. One of the easiest visa processes globally for Pakistanis.',
+  termStart:['September','January'],
+  deadlines:'Aug – Sep (Sep intake) · Dec (Jan intake)',
+  engReq:{ielts:5.5,toefl:71,duolingo:95,pte:50},
+  engNote:'Duolingo 95 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. No strict minimum.',
+  intlNote:'Most popular UAE university for Pakistani students. ABET-accredited CS. Large South Asian community. University manages UAE visa paperwork.',
+  scholarships:'Merit scholarships based on GPA up to 50% tuition',
+  website:'https://www.sharjah.ac.ae/en/Pages/Home.aspx',
+  applyLink:'https://www.sharjah.ac.ae/en/Admissions/international/Pages/home.aspx',
+  highlights:['Easiest UAE visa','Pakistani community','Duolingo OK','ABET CS','Merit scholarships'],
+},
+{
+  id:'ajman', name:'Ajman University', city:'Ajman', country:'UAE', region:'middleeast', flag:'🇦🇪',
+  programs:['cs','engineering','business','medicine'],
+  tuitionUSD:4700, tuitionLabel:'~$4,500 / yr',
+  duration:{cs:4,engineering:4,business:4,medicine:5},
+  acceptance:72, visaDifficulty:'easy',
+  visaNote:'UAE student visa. Simple process, university assists.',
+  termStart:['September','January'],
+  deadlines:'Aug (Sep) · Dec (Jan)',
+  engReq:{ielts:5.0,toefl:61,duolingo:90,pte:45},
+  engNote:'IELTS 5.0. Check with admissions on Duolingo.',
+  satRequired:false,
+  gradesNote:'Flexible entry. FSc/Matric accepted.',
+  intlNote:'Affordable UAE option. Many Pakistani students. Good CS and IT programs.',
+  scholarships:'Merit-based scholarships available',
+  website:'https://www.ajman.ac.ae/en',
+  applyLink:'https://www.ajman.ac.ae/en/admissions/international-students',
+  highlights:['Affordable UAE','Flexible entry','Pakistani-friendly','No SAT'],
+},
+{
+  id:'qu', name:'Qatar University', city:'Doha', country:'Qatar', region:'middleeast', flag:'🇶🇦',
+  programs:['cs','engineering','business'],
+  tuitionUSD:2200, tuitionLabel:'~$2,000 / yr (subsidised)',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:45, visaDifficulty:'moderate',
+  visaNote:'Qatar residency permit. More documentation than UAE/Saudi. University assists.',
+  termStart:['September'],
+  deadlines:'Feb – Mar',
+  engReq:{ielts:5.5,toefl:71,duolingo:null,pte:null},
+  engNote:'IELTS or TOEFL. Duolingo not accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Competitive — strong grades preferred.',
+  intlNote:'Qatar\'s national university. International scholarships available. High quality campus.',
+  scholarships:'QU scholarships for outstanding international students',
+  website:'https://www.qu.edu.qa/en-us',
+  applyLink:'https://www.qu.edu.qa/en-us/admissions/undergraduate/international-students',
+  highlights:['Cheap (subsidised)','Scholarship available','High quality','No SAT'],
+},
+{
+  id:'gutech', name:'German University of Technology (GUtech)', city:'Muscat', country:'Oman', region:'middleeast', flag:'🇴🇲',
+  programs:['cs','engineering'],
+  tuitionUSD:5800, tuitionLabel:'~$5,500 / yr',
+  duration:{cs:4,engineering:4},
+  acceptance:65, visaDifficulty:'easy',
+  visaNote:'Oman student visa. Easy for Pakistanis. University assists.',
+  termStart:['September'],
+  deadlines:'Jun – Aug',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:52},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted.',
+  intlNote:'Partner of RWTH Aachen (Germany). German-quality CS in English. Oman is stable and safe. Good pathway to German masters.',
+  scholarships:'GUtech merit scholarships',
+  website:'https://www.gutech.edu.om',
+  applyLink:'https://www.gutech.edu.om/admissions/undergraduate',
+  highlights:['RWTH Aachen partnership','German-quality CS','Easy Oman visa','Gateway to Germany'],
+},
+{
+  id:'uj', name:'University of Jordan', city:'Amman', country:'Jordan', region:'middleeast', flag:'🇯🇴',
+  programs:['cs','engineering','business','medicine','law'],
+  tuitionUSD:2700, tuitionLabel:'~$2,500 / yr',
+  duration:{cs:4,engineering:4,business:4,medicine:6,law:4},
+  acceptance:55, visaDifficulty:'easy',
+  visaNote:'Jordan student visa. Very easy for Pakistani nationals. University handles most documentation.',
+  termStart:['September','February'],
+  deadlines:'Jun – Sep',
+  engReq:{ielts:5.0,toefl:61,duolingo:95,pte:45},
+  engNote:'Duolingo 95 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Holistic review.',
+  intlNote:'Most affordable quality option in the Middle East. English CS programs. Large Pakistani community in Amman. Very easy visa.',
+  scholarships:'University of Jordan partial scholarships for international students',
+  website:'https://www.ju.edu.jo/home.aspx',
+  applyLink:'https://www.ju.edu.jo/faculties/facit/home.aspx',
+  highlights:['Most affordable Middle East','Easiest Jordan visa','Duolingo OK','All programs available'],
+},
+{
+  id:'uob', name:'University of Bahrain', city:'Sakhir', country:'Bahrain', region:'middleeast', flag:'🇧🇭',
+  programs:['cs','engineering','business'],
+  tuitionUSD:3200, tuitionLabel:'~$3,000 / yr',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:60, visaDifficulty:'easy',
+  visaNote:'Bahrain student visa. Small country, very straightforward process.',
+  termStart:['September'],
+  deadlines:'Jun – Aug',
+  engReq:{ielts:5.0,toefl:61,duolingo:90,pte:45},
+  engNote:'IELTS 5.0. Contact about Duolingo.',
+  satRequired:false,
+  gradesNote:'FSc accepted.',
+  intlNote:'Affordable Gulf option. Bahrain is safe and visa-friendly. Growing fintech/tech scene.',
+  scholarships:'Limited international scholarships',
+  website:'https://www.uob.edu.bh/en/',
+  applyLink:'https://www.uob.edu.bh/en/admissions/undergraduate-admissions',
+  highlights:['Affordable Gulf','Easy visa','No SAT','Growing tech scene'],
+},
+
+// ─── AUSTRALIA ────────────────────────────
+{
+  id:'uts', name:'University of Technology Sydney (UTS)', city:'Sydney', country:'Australia', region:'aus', flag:'🇦🇺',
+  programs:['cs','engineering','business'],
+  tuitionUSD:24000, tuitionLabel:'~AUD 35,000 / yr',
+  duration:{cs:4,engineering:4,business:3},
+  acceptance:68, visaDifficulty:'moderate',
+  visaNote:'Australian Student Visa (Subclass 500). Requires proof of funds (AUD 21,041/yr living + tuition + OSHC health insurance). Processing 4–6 weeks.',
+  termStart:['February','July'],
+  deadlines:'Nov 30 (Feb intake) · May 31 (Jul intake)',
+  engReq:{ielts:6.5,toefl:87,duolingo:105,pte:58},
+  engNote:'Duolingo 105 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. Aggregate evaluated. Include motivation letter for 12th grade issues.',
+  intlNote:'Top Australian tech university. 2–4 year post-study work visa (485) after graduation. Large Pakistani community in Sydney.',
+  scholarships:'UTS International Research Scholarship, Excellence Scholarship',
+  website:'https://www.uts.edu.au',
+  applyLink:'https://www.uts.edu.au/study/international/applying-uts/undergraduate-applications',
+  highlights:['Top tech uni','Post-study work visa 2–4yr','Duolingo OK','Sydney Pakistani community'],
+},
+{
+  id:'rmit', name:'RMIT University', city:'Melbourne', country:'Australia', region:'aus', flag:'🇦🇺',
+  programs:['cs','engineering','business'],
+  tuitionUSD:22700, tuitionLabel:'~AUD 33,000 / yr',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:73, visaDifficulty:'moderate',
+  visaNote:'Student Visa 500. Melbourne outside London equivalent costs. Allow 6 weeks for visa.',
+  termStart:['February','July'],
+  deadlines:'Oct–Nov (Feb) · Apr (Jul)',
+  engReq:{ielts:6.5,toefl:79,duolingo:105,pte:58},
+  engNote:'Duolingo 105 accepted.',
+  satRequired:false,
+  gradesNote:'Full academic trajectory reviewed. Strong 9th–11th helps with weak 12th.',
+  intlNote:'Industry-focused. High employment rate. Melbourne is Australia\'s most liveable city. 48 hrs/fortnight work during study.',
+  scholarships:'RMIT International Excellence Award',
+  website:'https://www.rmit.edu.au',
+  applyLink:'https://www.rmit.edu.au/study-with-us/international-students/apply-to-rmit-international-students',
+  highlights:['Industry-focused','Post-study work visa','Melbourne','Duolingo OK','High employment'],
+},
+{
+  id:'griffith', name:'Griffith University', city:'Brisbane / Gold Coast', country:'Australia', region:'aus', flag:'🇦🇺',
+  programs:['cs','engineering','business'],
+  tuitionUSD:19300, tuitionLabel:'~AUD 28,000 / yr',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:80, visaDifficulty:'moderate',
+  visaNote:'Student Visa 500. QLD is more affordable for living than Sydney/Melbourne.',
+  termStart:['February','July'],
+  deadlines:'Nov (Feb) · May (Jul)',
+  engReq:{ielts:6.0,toefl:79,duolingo:95,pte:50},
+  engNote:'Duolingo 95 accepted.',
+  satRequired:false,
+  gradesNote:'Flexible entry. Pathway/diploma programs available for borderline candidates.',
+  intlNote:'High acceptance rate. Diploma pathway directly into bachelor\'s — perfect if direct entry is uncertain.',
+  scholarships:'Griffith Remarkable Scholarship up to 50%',
+  website:'https://www.griffith.edu.au',
+  applyLink:'https://www.griffith.edu.au/apply/international-applicants',
+  highlights:['High acceptance rate','Pathway available','Duolingo 95','Affordable QLD','Scholarship 50%'],
+},
+{
+  id:'wsu', name:'Western Sydney University', city:'Sydney', country:'Australia', region:'aus', flag:'🇦🇺',
+  programs:['cs','engineering','business'],
+  tuitionUSD:17900, tuitionLabel:'~AUD 26,000 / yr',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:85, visaDifficulty:'moderate',
+  visaNote:'Student Visa 500. Rolling admissions makes it flexible.',
+  termStart:['February','July'],
+  deadlines:'Rolling',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'Flexible. Most accessible Sydney university.',
+  intlNote:'Located in Greater Western Sydney — home to one of Australia\'s largest Pakistani communities (Lakemba, Auburn, Parramatta).',
+  scholarships:'WSU International Excellence Scholarship',
+  website:'https://www.westernsydney.edu.au',
+  applyLink:'https://www.westernsydney.edu.au/future/study/application-pathways/international',
+  highlights:['Largest Pakistani area in Sydney','Highest acceptance rate','Rolling admissions','Duolingo 100'],
+},
+
+// ─── NEW ZEALAND ──────────────────────────
+{
+  id:'aut', name:'Auckland University of Technology (AUT)', city:'Auckland', country:'New Zealand', region:'nz', flag:'🇳🇿',
+  programs:['cs','engineering','business'],
+  tuitionUSD:17000, tuitionLabel:'~NZD 28,000 / yr',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:78, visaDifficulty:'moderate',
+  visaNote:'NZ Student Visa. Requires proof of funds (NZD 15,000/yr). Post-study open work visa up to 3 years.',
+  termStart:['February','July'],
+  deadlines:'Nov (Feb) · May (Jul)',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted. More accessible than University of Auckland.',
+  intlNote:'Growing Pakistani community in Auckland. 3yr post-study open work visa. Smaller, safer country.',
+  scholarships:'AUT International Student Excellence Scholarship',
+  website:'https://www.aut.ac.nz',
+  applyLink:'https://www.aut.ac.nz/study/international-students/applying-to-aut',
+  highlights:['Post-study work 3yr','Duolingo OK','Accessible entry','Safe country'],
+},
+{
+  id:'waikato', name:'University of Waikato', city:'Hamilton', country:'New Zealand', region:'nz', flag:'🇳🇿',
+  programs:['cs','business'],
+  tuitionUSD:14600, tuitionLabel:'~NZD 24,000 / yr',
+  duration:{cs:3,business:3},
+  acceptance:83, visaDifficulty:'moderate',
+  visaNote:'NZ Student Visa. Hamilton is cheaper than Auckland.',
+  termStart:['February','July'],
+  deadlines:'Nov (Feb) · May (Jul)',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'Flexible entry. FSc accepted.',
+  intlNote:'Known for CS/AI/data science. Most affordable NZ option. International scholarships up to NZD 10,000.',
+  scholarships:'Waikato International Excellence Award up to NZD 10,000/yr',
+  website:'https://www.waikato.ac.nz',
+  applyLink:'https://www.waikato.ac.nz/study/international-students/apply/',
+  highlights:['Most affordable NZ','Strong CS/AI','Scholarship NZD 10k','Duolingo OK'],
+},
+{
+  id:'massey', name:'Massey University', city:'Auckland / Palmerston North', country:'New Zealand', region:'nz', flag:'🇳🇿',
+  programs:['cs','engineering','business'],
+  tuitionUSD:15800, tuitionLabel:'~NZD 26,000 / yr',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:75, visaDifficulty:'moderate',
+  visaNote:'NZ Student Visa. Palmerston North campus has lower living costs.',
+  termStart:['February','July'],
+  deadlines:'Oct–Nov (Feb) · Apr (Jul)',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'Holistic review. Motivation letter helps.',
+  intlNote:'Multiple campuses. Palmerston North = very affordable living (~NZD 9,000/yr). Flexible entry.',
+  scholarships:'Massey International Scholarship',
+  website:'https://www.massey.ac.nz',
+  applyLink:'https://www.massey.ac.nz/study/study-options/international-students/how-to-apply/',
+  highlights:['Affordable campus option','Duolingo OK','Flexible entry','Multiple campuses'],
+},
+
+// ─── CANADA ───────────────────────────────
+{
+  id:'windsor', name:'University of Windsor', city:'Windsor, Ontario', country:'Canada', region:'canada', flag:'🇨🇦',
+  programs:['cs','engineering','business'],
+  tuitionUSD:22000, tuitionLabel:'~CAD 30,000 / yr',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:72, visaDifficulty:'moderate',
+  visaNote:'Canadian Student Visa (Study Permit). Processing 4–8 weeks. Biometrics required. Work 20hrs/week during study.',
+  termStart:['September','January'],
+  deadlines:'May (Sep) · Oct (Jan)',
+  engReq:{ielts:6.5,toefl:86,duolingo:115,pte:58},
+  engNote:'Duolingo 115 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. Co-op programs available.',
+  intlNote:'Closest Canadian city to USA (Detroit). Co-op (paid internship) built into CS/Engineering programs.',
+  scholarships:'UWindsor International Student Award',
+  website:'https://www.uwindsor.ca',
+  applyLink:'https://www.uwindsor.ca/future-students/international',
+  highlights:['Near USA border','Co-op programs','Duolingo 115','Work during study'],
+},
+{
+  id:'manitoba', name:'University of Manitoba', city:'Winnipeg, Manitoba', country:'Canada', region:'canada', flag:'🇨🇦',
+  programs:['cs','engineering','business'],
+  tuitionUSD:15000, tuitionLabel:'~CAD 20,000 / yr',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:70, visaDifficulty:'moderate',
+  visaNote:'Canadian Study Permit. Winnipeg is more affordable than Toronto/Vancouver.',
+  termStart:['September','January'],
+  deadlines:'May (Sep) · Oct (Jan)',
+  engReq:{ielts:6.5,toefl:86,duolingo:115,pte:58},
+  engNote:'Duolingo 115 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted.',
+  intlNote:'Most affordable major Canadian university. Large South Asian community in Winnipeg.',
+  scholarships:'International Student Entrance Scholarship up to CAD 14,000',
+  website:'https://umanitoba.ca',
+  applyLink:'https://umanitoba.ca/student/admissions/international.html',
+  highlights:['Most affordable Canada','South Asian community','Scholarship CAD 14k','Duolingo OK'],
+},
+{
+  id:'unb', name:'University of New Brunswick', city:'Fredericton / Saint John', country:'Canada', region:'canada', flag:'🇨🇦',
+  programs:['cs','engineering','business'],
+  tuitionUSD:14700, tuitionLabel:'~CAD 20,000 / yr',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:75, visaDifficulty:'moderate',
+  visaNote:'Canadian Study Permit. Smaller city = much cheaper living.',
+  termStart:['September','January'],
+  deadlines:'Mar (Sep) · Oct (Jan)',
+  engReq:{ielts:6.0,toefl:80,duolingo:105,pte:54},
+  engNote:'Duolingo 105 accepted. Lower English req than most Canadian unis.',
+  satRequired:false,
+  gradesNote:'FSc accepted. Lower entry requirements than Ontario schools.',
+  intlNote:'One of Canada\'s oldest universities. Very affordable. Lower English requirements. Fredericton is safe and welcoming.',
+  scholarships:'UNB International Student Scholarships up to $5,000/yr',
+  website:'https://www.unb.ca',
+  applyLink:'https://www.unb.ca/admissions/international/',
+  highlights:['Affordable Canada','Lower English req','Duolingo 105','Safe small city','No SAT'],
+},
+{
+  id:'yorku', name:'York University', city:'Toronto, Ontario', country:'Canada', region:'canada', flag:'🇨🇦',
+  programs:['cs','engineering','business'],
+  tuitionUSD:23000, tuitionLabel:'~CAD 32,000 / yr',
+  duration:{cs:4,engineering:4,business:4},
+  acceptance:65, visaDifficulty:'moderate',
+  visaNote:'Canadian Study Permit. Toronto = higher living costs.',
+  termStart:['September'],
+  deadlines:'Feb 1 (Sep)',
+  engReq:{ielts:6.5,toefl:88,duolingo:115,pte:58},
+  engNote:'Duolingo 115 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted.',
+  intlNote:'In Toronto — Canada\'s largest city with massive Pakistani community (Mississauga/Brampton area). Lassonde School of Engineering is strong.',
+  scholarships:'York University International Student Scholarship up to CAD 10,000',
+  website:'https://www.yorku.ca',
+  applyLink:'https://futurestudents.yorku.ca/international',
+  highlights:['Toronto location','Huge Pakistani community','Duolingo OK','Strong engineering'],
+},
+
+// ─── MALAYSIA ─────────────────────────────
+{
+  id:'utm', name:'Universiti Teknologi Malaysia (UTM)', city:'Johor Bahru / Kuala Lumpur', country:'Malaysia', region:'malaysia', flag:'🇲🇾',
+  programs:['cs','engineering'],
+  tuitionUSD:4200, tuitionLabel:'~MYR 18,000 / yr (~$4,200)',
+  duration:{cs:4,engineering:4},
+  acceptance:65, visaDifficulty:'easy',
+  visaNote:'Malaysia Student Pass. Very easy for Pakistanis. University handles most of it online.',
+  termStart:['September','February'],
+  deadlines:'Jul (Sep) · Nov (Feb)',
+  engReq:{ielts:6.0,toefl:80,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'FSc/Matric accepted. Holistic review.',
+  intlNote:'Top Malaysian engineering and CS university. Muslim-majority country. Halal food widely available. English academic environment. Very affordable living.',
+  scholarships:'UTM International Postgraduate Scholarship (mainly postgrad but check undergrad)',
+  website:'https://www.utm.my',
+  applyLink:'https://admission.utm.my/international/',
+  highlights:['Muslim country','Very affordable','Halal food','English medium','Easy visa'],
+},
+{
+  id:'utp', name:'Universiti Teknologi PETRONAS (UTP)', city:'Perak (Seri Iskandar)', country:'Malaysia', region:'malaysia', flag:'🇲🇾',
+  programs:['cs','engineering'],
+  tuitionUSD:5800, tuitionLabel:'~MYR 25,000 / yr (~$5,800)',
+  duration:{cs:4,engineering:4},
+  acceptance:55, visaDifficulty:'easy',
+  visaNote:'Malaysia Student Pass. University assists. One of the most hassle-free visa processes.',
+  termStart:['January','May','September'],
+  deadlines:'Intake 3x per year — rolling',
+  engReq:{ielts:6.0,toefl:79,duolingo:100,pte:50},
+  engNote:'Duolingo 100 accepted.',
+  satRequired:false,
+  gradesNote:'FSc accepted.',
+  intlNote:'Petronas-funded university. Strong engineering and CS. Industry connections. 3 intakes per year is very flexible.',
+  scholarships:'UTP International Student Scholarships (partial)',
+  website:'https://www.utp.edu.my',
+  applyLink:'https://www.utp.edu.my/Pages/admissions/international.aspx',
+  highlights:['3 intakes/yr','Industry connections','Petronas-funded','Easy visa','Muslim country'],
+},
+{
+  id:'mmu', name:'Multimedia University (MMU)', city:'Cyberjaya / Melaka', country:'Malaysia', region:'malaysia', flag:'🇲🇾',
+  programs:['cs','engineering','business'],
+  tuitionUSD:3800, tuitionLabel:'~MYR 16,000 / yr (~$3,800)',
+  duration:{cs:3,engineering:4,business:3},
+  acceptance:75, visaDifficulty:'easy',
+  visaNote:'Malaysia Student Pass. Very streamlined for international students.',
+  termStart:['February','June','October'],
+  deadlines:'Rolling — 3 intakes/yr',
+  engReq:{ielts:5.5,toefl:72,duolingo:90,pte:48},
+  engNote:'Duolingo 90 accepted. Low English requirement.',
+  satRequired:false,
+  gradesNote:'Very flexible entry. FSc/Matric accepted.',
+  intlNote:'Tech-focused university in Malaysia\'s Silicon Valley (Cyberjaya). Affordable. Large Pakistani/South Asian student community.',
+  scholarships:'MMU Merit Scholarships',
+  website:'https://www.mmu.edu.my',
+  applyLink:'https://www.mmu.edu.my/admission/international-students/',
+  highlights:['Cheapest option','Very flexible entry','3 intakes/yr','Cyberjaya tech hub','Duolingo 90'],
+},
+
+];
+
+// ══════════════════════════════════════════
+//  APP LOGIC
+// ══════════════════════════════════════════
+
+let userProfile = {};
+let filteredUnis = [];
+let activeRegion = 'all';
+
+function updateEngScore() {
+  const t = document.getElementById('f-eng-type').value;
+  const grp = document.getElementById('eng-score-group');
+  if (t === 'none' || t === 'native') {
+    grp.style.display = 'none';
+  } else {
+    grp.style.display = '';
+    const placeholders = {ielts:'e.g. 6.5',toefl:'e.g. 80',duolingo:'e.g. 105',pte:'e.g. 55'};
+    document.getElementById('f-eng-score').placeholder = placeholders[t] || 'Score';
+  }
+}
+
+function getSelectedRegions() {
+  return Array.from(document.querySelectorAll('.chip-check input:checked')).map(c => c.value);
+}
+
+// Budget max in USD
+const BUDGET_MAP = {3000:3000, 8000:8000, 15000:15000, 25000:25000, 999999:999999};
+
+function budgetMax() {
+  return parseInt(document.getElementById('f-budget').value);
+}
+
+function scoreUni(uni, profile) {
+  let score = 0, maxScore = 0;
+
+  // Region match (required)
+  if (!profile.regions.includes(uni.region)) return -1;
+
+  // Program match (required)
+  if (!uni.programs.includes(profile.field) && profile.field !== 'any') return -1;
+
+  // Budget — never hide, just score lower if over budget
+  maxScore += 25;
+  if (uni.tuitionUSD <= profile.budgetMax) score += 25;
+  else if (uni.tuitionUSD <= profile.budgetMax * 1.5) score += 10;
+  // over budget: score 0 but still show
+
+  // English requirement
+  maxScore += 30;
+  if (profile.engType === 'native') {
+    score += 30;
+  } else if (profile.engType === 'none') {
+    // No test taken — check if uni allows no test
+    if (!uni.engReq.ielts) score += 25;
+    else score += 5;
+  } else {
+    const userScore = profile.engScore;
+    const reqScore = uni.engReq[profile.engType];
+    if (!reqScore) {
+      // Uni doesn't accept this test type
+      score += 5;
+    } else if (userScore >= reqScore) {
+      score += 30;
+    } else if (userScore >= reqScore - 0.5) {
+      score += 15;
+    } else {
+      score += 0;
+    }
+  }
+
+  // Grades
+  maxScore += 25;
+  const gradeScore = {excellent:25, good:20, average:12, below:5};
+  score += gradeScore[profile.grades] || 10;
+
+  // SAT
+  maxScore += 10;
+  if (!uni.satRequired || profile.sat !== 'none') score += 10;
+  else score += 5;
+
+  // Visa bonus
+  maxScore += 10;
+  if (uni.visaDifficulty === 'easy') score += 10;
+  else if (uni.visaDifficulty === 'moderate') score += 6;
+  else score += 2;
+
+  return Math.round((score / maxScore) * 100);
+}
+
+function findUnis() {
+  userProfile = {
+    field: document.getElementById('f-field').value,
+    grades: document.getElementById('f-grades').value,
+    sat: document.getElementById('f-sat').value,
+    engType: document.getElementById('f-eng-type').value,
+    engScore: parseFloat(document.getElementById('f-eng-score').value) || 0,
+    budgetMax: budgetMax(),
+    regions: getSelectedRegions(),
+  };
+
+  filteredUnis = UNIS.map(u => ({...u, matchScore: scoreUni(u, userProfile)}))
+    .filter(u => u.matchScore >= 0)
+    .sort((a,b) => b.matchScore - a.matchScore);
+
+  activeRegion = 'all';
+  renderResults();
+
+  document.getElementById('results-section').style.display = '';
+  setTimeout(() => document.getElementById('results-section').scrollIntoView({behavior:'smooth'}), 100);
+}
+
+function renderResults() {
+  const sortBy = document.getElementById('sort-by').value;
+  let unis = [...filteredUnis];
+
+  if (sortBy === 'tuition') unis.sort((a,b) => a.tuitionUSD - b.tuitionUSD);
+  else if (sortBy === 'acceptance') unis.sort((a,b) => b.acceptance - a.acceptance);
+  else if (sortBy === 'visa') unis.sort((a,b) => {
+    const v = {easy:0,moderate:1,hard:2};
+    return v[a.visaDifficulty] - v[b.visaDifficulty];
+  });
+  else unis.sort((a,b) => b.matchScore - a.matchScore);
+
+  const visible = activeRegion === 'all' ? unis : unis.filter(u => u.region === activeRegion);
+
+  // Filter bar
+  const regionLabels = {all:'🌍 All', europe:'🇪🇺 Europe', saudi:'🇸🇦 Saudi', middleeast:'🕌 Middle East', aus:'🇦🇺 Australia', nz:'🇳🇿 New Zealand', canada:'🇨🇦 Canada', uk:'🇬🇧 UK', malaysia:'🇲🇾 Malaysia'};
+  const regions = ['all',...new Set(filteredUnis.map(u => u.region))];
+  document.getElementById('region-filters').innerHTML = regions.map(r =>
+    `<button class="filt-btn ${activeRegion===r?'active':''}" onclick="setRegion('${r}')">${regionLabels[r]||r} <span style="opacity:.6;font-size:10px">${r==='all'?filteredUnis.length:filteredUnis.filter(u=>u.region===r).length}</span></button>`
+  ).join('');
+
+  document.getElementById('res-count').textContent = visible.length;
+
+  if (!visible.length) {
+    document.getElementById('uni-list').innerHTML = `<div class="no-results"><div class="icon">🔍</div><h3>No matches found</h3><p>Try expanding your budget, regions, or relaxing requirements.</p></div>`;
+    return;
+  }
+
+  document.getElementById('uni-list').innerHTML = visible.map(u => renderCard(u)).join('');
+}
+
+function setRegion(r) {
+  activeRegion = r;
+  renderResults();
+}
+
+function getDuration(uni, field) {
+  return uni.duration[field] || uni.duration[Object.keys(uni.duration)[0]];
+}
+
+function renderCard(u) {
+  const p = userProfile;
+  const match = u.matchScore;
+  const matchClass = match >= 75 ? 'match-high' : match >= 50 ? 'match-mid' : 'match-low';
+  const matchLabel = match >= 75 ? '✓ Strong Match' : match >= 50 ? '~ Partial Match' : '⚠ Weak Match';
+
+  const visaChipClass = u.visaDifficulty === 'easy' ? 'mc-green' : u.visaDifficulty === 'moderate' ? 'mc-yellow' : 'mc-red';
+  const visaLabel = u.visaDifficulty === 'easy' ? '🟢 Visa: Easy' : u.visaDifficulty === 'moderate' ? '🟡 Visa: Moderate' : '🔴 Visa: Hard';
+
+  // English req check
+  let engChip = '';
+  if (p.engType === 'native') {
+    engChip = `<span class="meta-chip mc-green">✓ English: Native</span>`;
+  } else if (p.engType === 'none') {
+    engChip = u.engReq.ielts ? `<span class="meta-chip mc-yellow">⚠ English test needed</span>` : `<span class="meta-chip mc-green">✓ No English test</span>`;
+  } else {
+    const req = u.engReq[p.engType];
+    if (!req) {
+      engChip = `<span class="meta-chip mc-red">✗ ${p.engType.toUpperCase()} not accepted</span>`;
+    } else if (p.engScore >= req) {
+      engChip = `<span class="meta-chip mc-green">✓ ${p.engType.toUpperCase()} ${p.engScore} ≥ ${req}</span>`;
+    } else {
+      engChip = `<span class="meta-chip mc-red">✗ Need ${p.engType.toUpperCase()} ${req} (have ${p.engScore})</span>`;
+    }
+  }
+
+  const field = p.field === 'any' ? Object.keys(u.duration)[0] : p.field;
+  const yrs = getDuration(u, field);
+
+  return `
+  <div class="uni-card" id="card-${u.id}">
+    <div class="card-top">
+      <div class="card-left">
+        <div class="uni-flag-name">
+          <span class="uni-flag">${u.flag}</span>
+          <div class="uni-name"><a href="${u.website}" target="_blank">${u.name}</a></div>
+        </div>
+        <div class="uni-loc">📍 ${u.city}, ${u.country}</div>
+        <div class="match-bar">
+          <span class="match-pill ${matchClass}">${matchLabel} — ${match}%</span>
+        </div>
+      </div>
+      <div class="card-right">
+        <div class="tuition-val">${u.tuitionLabel}</div>
+        <div class="tuition-note">${u.tuitionNote||'per year'}</div>
+        <div class="acceptance">Acceptance <strong>~${u.acceptance}%</strong></div>
+      </div>
+    </div>
+
+    <div class="card-meta">
+      <span class="meta-chip ${visaChipClass}">${visaLabel}</span>
+      <span class="meta-chip mc-blue">📅 ${u.deadlines}</span>
+      <span class="meta-chip mc-gray">📚 ${yrs} years</span>
+      <span class="meta-chip mc-gray">🗓 Starts: ${u.termStart.join(' / ')}</span>
+      ${engChip}
+      ${u.satRequired ? `<span class="meta-chip mc-yellow">SAT Required</span>` : `<span class="meta-chip mc-green">✓ No SAT</span>`}
+      ${u.tuitionUSD > p.budgetMax ? `<span class="meta-chip mc-red">⚠ Over your budget</span>` : ''}
+    </div>
+
+    <button class="card-expand-btn" onclick="toggleDetail('${u.id}')">▼ SHOW FULL DETAILS</button>
+
+    <div class="card-detail hidden" id="detail-${u.id}">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="dl">Visa Process</div>
+          <div class="dv">${u.visaNote}</div>
+        </div>
+        <div class="detail-item">
+          <div class="dl">English Requirements</div>
+          <div class="dv">IELTS ${u.engReq.ielts||'—'} · TOEFL ${u.engReq.toefl||'—'} · Duolingo ${u.engReq.duolingo||'Not accepted'} · PTE ${u.engReq.pte||'—'}<br><em style="color:var(--muted)">${u.engNote}</em></div>
+        </div>
+        <div class="detail-item">
+          <div class="dl">Transcripts / Grades</div>
+          <div class="dv">${u.gradesNote}</div>
+        </div>
+        <div class="detail-item">
+          <div class="dl">For International Students</div>
+          <div class="dv">${u.intlNote}</div>
+        </div>
+        <div class="detail-item">
+          <div class="dl">Scholarships</div>
+          <div class="dv">${u.scholarships}</div>
+        </div>
+        <div class="detail-item">
+          <div class="dl">Programs Available</div>
+          <div class="dv">${u.programs.map(p => ({cs:'CS / Software Eng',engineering:'Engineering',business:'Business / Finance',medicine:'Medicine / Pharmacy',architecture:'Architecture',law:'Law'}[p]||p)).join('<br>')}</div>
+        </div>
+      </div>
+      ${u.highlights.length ? `<div class="detail-note">⭐ <strong>Why it fits:</strong> ${u.highlights.join(' · ')}</div>` : ''}
+      <div class="card-links">
+        <a href="${u.applyLink}" target="_blank" class="link-btn link-primary">📝 Apply Now</a>
+        <a href="${u.website}" target="_blank" class="link-btn link-secondary">🌐 University Website</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById('detail-'+id);
+  const btn = el.previousElementSibling;
+  if (el.classList.contains('hidden')) {
+    el.classList.remove('hidden');
+    btn.textContent = '▲ HIDE DETAILS';
+  } else {
+    el.classList.add('hidden');
+    btn.textContent = '▼ SHOW FULL DETAILS';
+  }
+}
+</script>
+</body>
+</html>
